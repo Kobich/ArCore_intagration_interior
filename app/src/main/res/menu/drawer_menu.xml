@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_scan_qr"
+        android:icon="@drawable/menu_ic"
+        android:title="Сканировать QR" />
+    <item
+        android:id="@+id/nav_download_link"
+        android:icon="@drawable/menu_ic"
+        android:title="Скачать по ссылке" />
+    <item
+        android:id="@+id/nav_filter"
+        android:icon="@drawable/menu_ic"
+        android:title="Фильтр категорий" />
+</menu>

@@ -1,0 +1,41 @@
+{
+  "chairs": [
+    {
+      "id": "chair_modern",
+      "displayName": "Современный стул",
+      "path": "models/chairs/chair2.glb",
+      "preview": "previews/chair_modern.png"
+
+    },
+    {
+      "id": "chair_classic",
+      "displayName": "Классический стул",
+      "path": "models/chairs/AR-Code-12.glb",
+      "preview": "previews/chair_classic.png"
+    }
+  ],
+  "other": [
+    {
+      "id": "what_is_it",
+      "displayName": "хз",
+      "path": "models/chairs/AR-Code-1683008649313.glb",
+      "preview": "previews/what_is_it.png"
+
+    },
+    {
+      "id": "ball",
+      "displayName": "мяч",
+      "path": "models/other/ball.glb",
+      "preview": "previews/ball.png"
+    }
+  ],
+  "sofas": [
+    {
+      "id": "sofa_old",
+      "displayName": "шкаф деревянный",
+      "path": "models/sofas/sofa_1.glb",
+      "preview": "previews/sofa_1.png"
+
+    }
+    ]
+}
