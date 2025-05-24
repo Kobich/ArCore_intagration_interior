@@ -6,6 +6,7 @@ sealed class GalleryEntry {
         val id: String,
         val displayName: String,
         val path: String,
-        val preview: String
+        val preview: String,
+        var favorite: Boolean = false 
     ) : GalleryEntry()
 }

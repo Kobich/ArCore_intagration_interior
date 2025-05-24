@@ -1,9 +1,7 @@
-package com.example.app
+package com.example.app.util
 
 import android.content.Context
-import android.content.res.AssetManager
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import java.io.File
 import java.io.FileWriter
 

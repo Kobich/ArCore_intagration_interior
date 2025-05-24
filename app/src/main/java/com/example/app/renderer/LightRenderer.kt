@@ -3,11 +3,10 @@ package com.example.app.renderer
 import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.BitmapFactory
-import android.util.Log
-import com.example.app.V3
-import com.example.app.div
+import com.example.app.util.V3
+import com.example.app.util.div
 import com.example.app.filament.Filament
-import com.example.app.getEnvironmentalHdrSphericalHarmonics
+import com.example.app.util.getEnvironmentalHdrSphericalHarmonics
 import com.google.android.filament.Engine
 import com.google.android.filament.EntityInstance
 import com.google.android.filament.EntityManager

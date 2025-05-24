@@ -1,4 +1,4 @@
-package com.example.app
+package com.example.app.util
 
 data class PermissionResultEvent(val requestCode: Int, val grantResults: IntArray) {
     override fun equals(other: Any?): Boolean {

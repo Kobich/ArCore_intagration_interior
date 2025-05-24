@@ -16,5 +16,6 @@
 
     <color name="colorBackground">#ffffff</color>
     <color name="colorOnBackground">#000000</color>
+    <color name="favorite_color">#ff6d65</color>
 
 </resources>

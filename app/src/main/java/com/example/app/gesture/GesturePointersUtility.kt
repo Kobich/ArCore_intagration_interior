@@ -3,8 +3,8 @@ package com.example.app.gesture
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.MotionEvent
-import com.example.app.V3
-import com.example.app.v3
+import com.example.app.util.V3
+import com.example.app.util.v3
 
 // Retains/Releases pointer Ids so that each pointer can only be used in one gesture at a time.
 // Provides helper functions for converting touch coordinates between pixels and inches.

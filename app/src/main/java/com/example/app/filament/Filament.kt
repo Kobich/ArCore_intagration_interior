@@ -4,8 +4,8 @@ import android.content.Context
 import android.opengl.EGLContext
 import android.view.Surface
 import android.view.SurfaceView
-import com.example.app.createEglContext
-import com.example.app.destroyEglContext
+import com.example.app.util.createEglContext
+import com.example.app.util.destroyEglContext
 import com.google.android.filament.Camera
 import com.google.android.filament.Engine
 import com.google.android.filament.EntityManager

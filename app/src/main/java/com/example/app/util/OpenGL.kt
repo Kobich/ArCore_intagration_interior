@@ -1,4 +1,4 @@
-package com.example.app
+package com.example.app.util
 
 import android.opengl.EGL14
 import android.opengl.EGLConfig

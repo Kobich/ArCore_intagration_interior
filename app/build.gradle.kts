@@ -101,6 +101,10 @@ dependencies {
     implementation(libs.hiltAndroid)
     ksp(libs.hiltAndroidCompiler)
     implementation("com.google.code.gson:gson:2.8.5")
+    
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("androidx.datastore:datastore-preferences-core:1.1.7")
 
     implementation(libs.bundles.kotlinx)
     implementation(libs.bundles.google)

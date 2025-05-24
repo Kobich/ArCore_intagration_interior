@@ -16,9 +16,9 @@
             android:id="@+id/toolbar"
             android:layout_width="0dp"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
             android:titleTextColor="@android:color/white"
-            app:title="Галерея моделей"
+
+            app:menu="@menu/gallery_toolbar_menu"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

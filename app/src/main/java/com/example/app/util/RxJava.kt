@@ -1,10 +1,11 @@
-package com.example.app
+package com.example.app.util
 
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import com.example.app.R
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 

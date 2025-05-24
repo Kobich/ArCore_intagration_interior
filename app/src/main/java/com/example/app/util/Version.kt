@@ -1,4 +1,4 @@
-package com.example.app
+package com.example.app.util
 
 data class Version(
     val major: Int,

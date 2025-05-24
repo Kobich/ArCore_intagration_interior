@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.example.app
+package com.example.app.util
 
 import kotlin.math.max
 

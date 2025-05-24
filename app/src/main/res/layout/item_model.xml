@@ -7,26 +7,41 @@
     card_view:cardCornerRadius="8dp"
     card_view:cardElevation="4dp">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/previewImage"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_furniture" />
+
+            <TextView
+                android:id="@+id/modelName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Название модели "
+                android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+        </LinearLayout>
 
         <ImageView
-            android:id="@+id/previewImage"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_furniture" />
+            android:id="@+id/favoriteIcon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="12dp"
+            android:src="@drawable/favorite_empty_ic_2"
+            android:contentDescription="@string/favorite" />
 
-        <TextView
-            android:id="@+id/modelName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Название модели"
-            android:textAppearance="?attr/textAppearanceSubtitle1" />
-
-    </LinearLayout>
+    </FrameLayout>
 </androidx.cardview.widget.CardView>
