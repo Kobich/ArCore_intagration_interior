@@ -35,7 +35,13 @@
       "displayName": "шкаф деревянный",
       "path": "models/sofas/sofa_1.glb",
       "preview": "previews/sofa_1.png"
-
+    },
+    {
+      "id": "sofa_old",
+      "displayName": "шкаф деревянный",
+      "path": "models/sofas/sofa_2.glb",
+      "preview": "previews/sofa_2.png"
     }
+
     ]
 }
