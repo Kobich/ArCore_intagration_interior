@@ -31,17 +31,16 @@
   ],
   "sofas": [
     {
-      "id": "sofa_old",
+      "id": "sofa_1",
       "displayName": "шкаф деревянный",
       "path": "models/sofas/sofa_1.glb",
       "preview": "previews/sofa_1.png"
     },
     {
-      "id": "sofa_old",
-      "displayName": "шкаф деревянный",
+      "id": "sofa_2",
+      "displayName": "диван светлый",
       "path": "models/sofas/sofa_2.glb",
       "preview": "previews/sofa_2.png"
     }
-
     ]
 }

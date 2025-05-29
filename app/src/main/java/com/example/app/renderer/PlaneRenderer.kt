@@ -128,6 +128,7 @@ class PlaneRenderer(context: Context, private val filament: Filament) {
 
         // update plane trackables
         val planeTrackables = frame
+
             .getUpdatedTrackables(Plane::class.java)
             .map { plane -> plane.subsumedBy ?: plane }
             .toSet()

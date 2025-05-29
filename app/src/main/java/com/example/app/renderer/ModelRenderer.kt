@@ -41,13 +41,6 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
 
     private val modelBytesCache = mutableMapOf<String, ByteArray>()
 
-    // 1) Однократная загрузка .glb в байты
-    private val modelBytes: ByteArray by lazy {
-        context.assets.open("models/other/AR-Code-1683008649313.glb").use { input ->
-            ByteArray(input.available()).also { input.read(it) }
-        }
-    }
-
     private suspend fun getModelBytes(path: String): ByteArray = withContext(Dispatchers.IO) {
         modelBytesCache[path] ?: run {
 

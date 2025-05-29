@@ -85,6 +85,7 @@ class ArCore(private val activity: Activity, val filament: Filament, private val
                     lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
                     // getting ar frame doesn't block and gives last frame
                     updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+
                 }
                 .let(session::configure)
 

@@ -1,0 +1,102 @@
+package com.example.app.util
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Environment
+import android.util.Log
+import java.io.File
+import java.io.FileOutputStream
+import java.nio.ByteBuffer
+import com.google.android.filament.*
+import com.google.android.filament.gltfio.AssetLoader
+import com.google.android.filament.gltfio.FilamentAsset
+import com.google.android.filament.utils.*
+
+class ModelPreviewGenerator(private val context: Context) {
+
+    private lateinit var engine: Engine
+    private lateinit var scene: Scene
+    private lateinit var asset: FilamentAsset
+    private lateinit var assetLoader: AssetLoader
+
+    fun generatePreview(modelUri: String, outputFilePath: String) {
+        try {
+            // Инициализация Filament
+            engine = Engine.create()
+            scene = engine.createScene()
+
+            // Загрузка модели
+            assetLoader = AssetLoader(engine)
+            val inputStream = context.assets.open(modelUri)
+            val buffer = inputStream.readBytes()
+            asset = assetLoader.createAsset(buffer, buffer.size)
+
+            // Добавление модели в сцену
+            scene.addEntities(asset.entities, asset.entityCount)
+
+            // Настройка камеры
+            val camera = engine.createCamera()
+            val cameraEntity = EntityManager.get().create()
+            camera.entity = cameraEntity
+            scene.camera = camera
+
+            // Позиционирование камеры
+            val bounds = asset.boundingBox
+            val center = bounds.center
+            val radius = bounds.radius
+            val cameraDistance = radius * 2.5f
+            camera.lookAt(
+                center.x - cameraDistance,
+                center.y + cameraDistance,
+                center.z + cameraDistance,
+                center.x, center.y, center.z,
+                0f, 1f, 0f
+            )
+
+            // Создание вью и рендерера
+            val view = engine.createView().apply {
+                this.scene = this@ModelPreviewGenerator.scene
+                this.viewport = Viewport(0, 0, 512, 512)
+            }
+
+            val renderer = engine.createRenderer()
+            val swapChain = engine.createSwapChain(512, 512, SwapChain.CONFIG_DEFAULT)
+
+            // Рендеринг в пиксельный буфер
+            val pixelBuffer = ByteBuffer.allocateDirect(512 * 512 * 4)
+            val renderTarget = RenderTarget.Builder()
+                .width(512)
+                .height(512)
+                .colorFormat(PixelFormat.RGBA_8)
+                .build(engine)
+
+            val targetView = engine.createView().apply {
+                this.scene = this@ModelPreviewGenerator.scene
+                this.viewport = Viewport(0, 0, 512, 512)
+            }
+
+            renderer.render(targetView, renderTarget)
+            renderer.readPixels(renderTarget, 0, 0, 512, 512, pixelBuffer)
+
+            // Преобразование в Bitmap
+            val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+            bitmap.copyPixelsFromBuffer(pixelBuffer)
+
+            // Сохранение изображения
+            saveBitmapToFile(bitmap, outputFilePath)
+
+            // Очистка ресурсов
+            engine.destroy()
+        } catch (e: Exception) {
+            Log.e("ModelPreview", "Ошибка генерации превью", e)
+        }
+    }
+
+    private fun saveBitmapToFile(bitmap: Bitmap, filePath: String) {
+        val file = File(filePath)
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+    }
+}

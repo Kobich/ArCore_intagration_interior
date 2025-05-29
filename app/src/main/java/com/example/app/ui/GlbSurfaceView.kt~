@@ -1,0 +1,36 @@
+package com.example.app.ui
+
+import android.content.Context
+import android.util.AttributeSet
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import com.example.app.glb.GlbRenderer
+
+class GlbSurfaceView @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null
+) : SurfaceView(context, attrs), SurfaceHolder.Callback {
+
+    private var renderer: GlbRenderer? = null
+    private var modelPath: String? = null
+
+    init {
+        holder.addCallback(this)
+    }
+
+    fun setModelAsset(path: String) {
+        modelPath = path
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder) {
+        modelPath?.let {
+            renderer = GlbRenderer(context, this, it)
+            renderer?.start()
+        }
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        renderer?.destroy()
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+}

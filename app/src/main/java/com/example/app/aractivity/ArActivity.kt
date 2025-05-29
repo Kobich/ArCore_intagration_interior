@@ -22,7 +22,7 @@ import com.example.app.util.UserCanceled
 import com.example.app.arcore.ArCore
 import com.example.app.util.cameraPermissionRequestCode
 import com.example.app.util.checkIfOpenGlVersionSupported
-import com.example.app.databinding.ExampleActivityBinding
+import com.example.app.databinding.ActivityArBinding
 import com.example.app.filament.Filament
 import com.example.app.gesture.DragGesture
 import com.example.app.gesture.DragGestureRecognizer
@@ -94,7 +94,7 @@ class ArActivity : AppCompatActivity() {
 
     private val createScope = CoroutineScope(Dispatchers.Main)
     private lateinit var startScope: CoroutineScope
-    private lateinit var binding: ExampleActivityBinding
+    private lateinit var binding: ActivityArBinding
 
     private lateinit var modelRenderer: ModelRenderer
 
@@ -105,7 +105,7 @@ class ArActivity : AppCompatActivity() {
 
 
         updateModelsManifest(this)
-        binding = ExampleActivityBinding.inflate(layoutInflater)
+        binding = ActivityArBinding.inflate(layoutInflater)
         setContentView(binding.root)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

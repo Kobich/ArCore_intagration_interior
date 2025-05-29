@@ -10,7 +10,7 @@ class FrameCallback(
     private val doFrame: (frame: Frame) -> Unit,
 ) : Choreographer.FrameCallback {
     companion object {
-        private const val MAX_FRAMES_PER_SECOND: Long = 60
+        private const val MAX_FRAMES_PER_SECOND: Long = 30
     }
 
     @Suppress("unused")

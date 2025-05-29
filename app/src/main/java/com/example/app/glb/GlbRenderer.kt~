@@ -1,0 +1,104 @@
+package com.example.app.glb
+
+import android.content.Context
+import android.util.Log
+import android.view.Choreographer
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import com.google.android.filament.*
+import com.google.android.filament.gltfio.*
+import com.google.android.filament.utils.*
+import java.nio.ByteBuffer
+
+class GlbRenderer(
+    private val context: Context,
+    private val surfaceView: SurfaceView,
+    private val assetPath: String
+) {
+    private lateinit var engine: Engine
+    private lateinit var modelViewer: ModelViewer
+    private lateinit var assetLoader: AssetLoader
+    private lateinit var resourceLoader: ResourceLoader
+    private var asset: FilamentAsset? = null
+
+    fun start() {
+        engine = Engine.create()
+        modelViewer = ModelViewer(surfaceView)
+
+        modelViewer.renderer.clearOptions = Renderer.ClearOptions().apply {
+            clear = true
+            clearColor = floatArrayOf(0.1f, 0.1f, 0.1f, 1.0f)
+        }
+
+        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                loadGlb(assetPath)
+                setupLighting()
+                Choreographer.getInstance().postFrameCallback(frameCallback)
+            }
+
+            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+                modelViewer.view.viewport = Viewport(0, 0, width, height)
+            }
+
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+                destroy()
+            }
+        })
+    }
+
+    private fun loadGlb(assetPath: String) {
+        val buffer = context.assets.open(assetPath).use { it.readBytes() }
+        val materialProvider = UbershaderProvider(engine)
+        assetLoader = AssetLoader(engine, materialProvider, EntityManager.get())
+        resourceLoader = ResourceLoader(engine)
+
+        asset = assetLoader.createAsset(ByteBuffer.wrap(buffer))
+        if (asset == null) {
+            Log.e("GlbRenderer", "❌ Failed to load GLB asset from $assetPath")
+            return
+        }
+
+        resourceLoader.loadResources(asset!!)
+        modelViewer.scene.addEntities(asset!!.entities)
+        modelViewer.transformToUnitCube()
+    }
+
+    private fun setupLighting() {
+        try {
+            // Basic directional light
+            val sun = EntityManager.get().create()
+            LightManager.Builder(LightManager.Type.DIRECTIONAL)
+                .color(1.0f, 1.0f, 1.0f)
+                .intensity(100_000.0f)
+                .direction(0.0f, -1.0f, -1.0f)
+                .castShadows(true)
+                .build(engine, sun)
+            modelViewer.scene.addEntity(sun)
+
+            // Skybox (no IBL, just a neutral white color)
+            val skybox = Skybox.Builder()
+                .color(0.8f, 0.8f, 0.8f, 1.0f)
+                .build(engine)
+            modelViewer.scene.skybox = skybox
+
+        } catch (e: Exception) {
+            Log.e("GlbRenderer", "⚠️ Failed to setup lighting: ${e.message}")
+        }
+    }
+
+    private val frameCallback = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            modelViewer.render(frameTimeNanos)
+            Choreographer.getInstance().postFrameCallback(this)
+        }
+    }
+
+    fun destroy() {
+        asset?.let {
+            assetLoader.destroyAsset(it)
+        }
+        modelViewer.destroyModel()
+        engine.destroy()
+    }
+}

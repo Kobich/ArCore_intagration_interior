@@ -20,6 +20,7 @@ import com.example.app.R
 import com.example.app.aractivity.ArActivity
 import com.example.app.model.GalleryEntry
 import com.example.app.ui.gallery.adapter.GalleryAdapter
+import com.example.app.ui.gallery.fragment.GalleryFragment
 import com.example.app.ui.gallery.viewmodel.GalleryViewModel
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,116 +32,27 @@ import kotlinx.coroutines.launch
  * Позволяет просматривать, фильтровать и добавлять модели в избранное
  */
 @AndroidEntryPoint
-class GalleryActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-
-    private val viewModel: GalleryViewModel by viewModels()
-
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var galleryAdapter: GalleryAdapter
-
+class GalleryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_gallery)
+        setContentView(R.layout.gallery_main_activity)
 
-        setSupportActionBar(findViewById(R.id.toolbar))
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportFragmentManager.setFragmentResultListener(
+            GalleryFragment.RESULT_KEY,
+            this
+        ) { _, bundle ->
+            val modelPath = bundle.getString(GalleryFragment.ITEM_PATH) ?: return@setFragmentResultListener
 
-        drawerLayout = findViewById(R.id.drawerLayout)
-        val navigationView = findViewById<NavigationView>(R.id.navigationView)
-        navigationView.setNavigationItemSelectedListener(this)
-
-        val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, findViewById(R.id.toolbar),
-            R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-
-
-        val galleryRecyclerView = findViewById<RecyclerView>(R.id.rvGallery)
-        galleryRecyclerView.layoutManager = LinearLayoutManager(this)
-
-        galleryRecyclerView.layoutManager = GridLayoutManager(this, 2).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int) =
-                    if (galleryAdapter.currentList.getOrNull(position) is GalleryEntry.Category) 2 else 1
-            }
+            val intent = Intent(this, ArActivity::class.java)
+            intent.putExtra("modelPath", modelPath)
+            startActivity(intent)
         }
 
-        galleryAdapter = GalleryAdapter(
-            onItemClicked = { item ->
-                val intent = Intent(this, ArActivity::class.java)
-                intent.putExtra("model_path", item.path)
-                startActivity(intent)
-            },
-            onFavoriteClicked = { item ->
 
-                viewModel.toggleFavorite(item)
-            }
-        )
-
-
-        galleryRecyclerView.adapter = galleryAdapter
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.galleryItems.collectLatest { items ->
-                        galleryAdapter.submitList(items)
-                    }
-                }
-
-                launch {
-                    viewModel.showOnlyFavorites.collectLatest { showOnlyFavorites ->
-                        invalidateOptionsMenu()
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.gallery_toolbar_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_favorite -> {
-                val newState = !viewModel.showOnlyFavorites.value
-                viewModel.setShowOnlyFavorites(newState)
-                true
-            }
-
-            R.id.action_filter -> {
-                Toast.makeText(this, "Toolbar Filter clicked", Toast.LENGTH_SHORT).show()
-                true
-            }
-
-            android.R.id.home -> {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                } else {
-                    drawerLayout.openDrawer(GravityCompat.START)
-                }
-                true
-            }
-
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-
-        drawerLayout.closeDrawer(GravityCompat.START)
-        return true
-    }
-
-    override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, GalleryFragment.newInstance())
+                .commit()
         }
     }
 }
