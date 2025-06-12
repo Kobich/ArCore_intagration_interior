@@ -60,8 +60,42 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
         var scale: Float,
 
         val boundCenter: V3,
-        val boundRadius: Float
-    )
+        val boundRadius: Float,
+
+        var lastTransformMatrix: FloatArray? = null
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Instance
+
+            if (asset != other.asset) return false
+            if (translation != other.translation) return false
+            if (rotate != other.rotate) return false
+            if (scale != other.scale) return false
+            if (boundCenter != other.boundCenter) return false
+            if (boundRadius != other.boundRadius) return false
+            if (lastTransformMatrix != null) {
+                if (other.lastTransformMatrix == null) return false
+                if (!lastTransformMatrix.contentEquals(other.lastTransformMatrix)) return false
+            } else if (other.lastTransformMatrix != null) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = asset.hashCode()
+            result = 31 * result + translation.hashCode()
+            result = 31 * result + rotate.hashCode()
+            result = 31 * result + scale.hashCode()
+            result = 31 * result + boundCenter.hashCode()
+            result = 31 * result + boundRadius.hashCode()
+            result = 31 * result + (lastTransformMatrix?.contentHashCode() ?: 0)
+            return result
+        }
+    }
+
     private val instances = mutableListOf<Instance>()
     // индекс «текущего» (последнего) инстанса
 
@@ -96,7 +130,7 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                             filament.surfaceView.width * ev.screenPosition.x,
                             filament.surfaceView.height * ev.screenPosition.y
                         ).maxByOrNull { it.trackable is Point }?.let { hit ->
-                            Pair(ev.modelPath, V3(hit.hitPose.translation).apply { y += 0.002f })
+                            Pair(ev.modelPath, V3(hit.hitPose.translation).apply { y += 0.005f })
                         }
                     }
                     .collect { (modelPath, pos) ->
@@ -178,34 +212,42 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
             }
 
             // D) Рендер каждый кадр всех инстансов
+            // D) Рендер каждый кадр всех инстансов (оптимизированный: setTransform() только при изменении)
             launch {
                 doFrameEvents.collect { frame ->
                     instances.forEach { inst ->
-                        // анимация, если есть
+                        // 1) Если у модели есть анимация, запускаем её
                         val animator = inst.asset.instance.animator
                         if (animator.animationCount > 0) {
                             animator.applyAnimation(
                                 0,
-                                (frame.timestamp / TimeUnit.SECONDS.toNanos(1).toDouble())
-                                    .toFloat() % animator.getAnimationDuration(0)
+                                (frame.timestamp / TimeUnit.SECONDS.toNanos(1).toDouble()).toFloat() %
+                                        animator.getAnimationDuration(0)
                             )
                             animator.updateBoneMatrices()
                         }
-                        // вставляем и трансформируем
 
-                        val tm = filament.engine.transformManager
-                        val ti = tm.getInstance(inst.asset.root)
-                        tm.setTransform(
-                            ti,
-                            m4Identity()
-                                .translate(inst.translation.x, inst.translation.y, inst.translation.z)
-                                .rotate(inst.rotate.toDegrees, 0f, 1f, 0f)
-                                .scale(inst.scale, inst.scale, inst.scale)
-                                .floatArray
-                        )
+                        // 2) Вычисляем новую матрицу трансформации
+                        val newMatrix = m4Identity()
+                            .translate(inst.translation.x, inst.translation.y, inst.translation.z)
+                            .rotate(inst.rotate.toDegrees, 0f, 1f, 0f)
+                            .scale(inst.scale, inst.scale, inst.scale)
+                            .floatArray
+
+                        // 3) Если матрица изменилась (или ещё не была установлена), отправляем её Filament
+                        if (inst.lastTransformMatrix == null ||
+                            !inst.lastTransformMatrix!!.contentEquals(newMatrix)
+                        ) {
+                            val tm = filament.engine.transformManager
+                            val ti = tm.getInstance(inst.asset.root)
+                            tm.setTransform(ti, newMatrix)
+                            // Обновляем кэш
+                            inst.lastTransformMatrix = newMatrix
+                        }
                     }
                 }
             }
+
         }
     }
 

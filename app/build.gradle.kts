@@ -95,6 +95,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.datastore.core.android)
     coreLibraryDesugaring(libs.desugarJdkLibsNio)
     implementation(platform(libs.composeBom))
 
@@ -106,6 +107,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation("androidx.datastore:datastore-preferences-core:1.1.7")
 
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.4.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation(libs.bundles.kotlinx)
     implementation(libs.bundles.google)
     implementation(libs.bundles.androidx)

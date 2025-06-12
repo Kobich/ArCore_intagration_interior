@@ -37,16 +37,7 @@ class GalleryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.gallery_main_activity)
 
-        supportFragmentManager.setFragmentResultListener(
-            GalleryFragment.RESULT_KEY,
-            this
-        ) { _, bundle ->
-            val modelPath = bundle.getString(GalleryFragment.ITEM_PATH) ?: return@setFragmentResultListener
 
-            val intent = Intent(this, ArActivity::class.java)
-            intent.putExtra("modelPath", modelPath)
-            startActivity(intent)
-        }
 
 
         if (savedInstanceState == null) {

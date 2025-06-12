@@ -2,24 +2,36 @@ package com.example.app.aractivity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.MediaStore
 import android.view.MotionEvent
+import android.view.PixelCopy
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.example.app.util.OpenGLVersionNotSupported
 import com.example.app.util.PermissionResultEvent
 import com.example.app.R
 import com.example.app.util.UserCanceled
 import com.example.app.arcore.ArCore
+import com.example.app.data.repository.FavoritesRepository
 import com.example.app.util.cameraPermissionRequestCode
 import com.example.app.util.checkIfOpenGlVersionSupported
 import com.example.app.databinding.ActivityArBinding
@@ -31,11 +43,13 @@ import com.example.app.gesture.PinchGestureRecognizer
 import com.example.app.gesture.TransformationSystem
 import com.example.app.gesture.TwistGesture
 import com.example.app.gesture.TwistGestureRecognizer
+import com.example.app.model.GalleryEntry
 import com.example.app.util.minOpenGlVersion
 import com.example.app.renderer.FrameCallback
 import com.example.app.renderer.LightRenderer
 import com.example.app.renderer.ModelRenderer
 import com.example.app.renderer.PlaneRenderer
+import com.example.app.ui.gallery.adapter.FavoriteModelsAdapter
 import com.example.app.util.showOpenGlNotSupportedDialog
 import com.example.app.util.toRadians
 import com.example.app.util.updateModelsManifest
@@ -44,6 +58,7 @@ import com.example.app.util.y
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
@@ -60,14 +75,22 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.OutputStream
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+@AndroidEntryPoint
 class ArActivity : AppCompatActivity() {
+
     private val resumeBehavior: MutableStateFlow<Unit?> =
         MutableStateFlow(null)
+    private var selectedModel: GalleryEntry.Item? = null
+
+    @Inject
+    lateinit var favoritesRepository: FavoritesRepository
 
     private val requestPermissionResultEvents: MutableSharedFlow<PermissionResultEvent> =
         MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -107,6 +130,55 @@ class ArActivity : AppCompatActivity() {
         updateModelsManifest(this)
         binding = ActivityArBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.screenshotButton.setOnClickListener {
+            takeArScreenshot()
+        }
+
+        val favoritesAdapter = FavoriteModelsAdapter()
+        binding.favoritesRecycler.apply {
+            layoutManager = LinearLayoutManager(this@ArActivity, RecyclerView.HORIZONTAL, false)
+            adapter = favoritesAdapter
+        }
+
+        binding.backByActivity.setOnClickListener {
+            finish()
+        }
+        // SnapHelper — центрирование
+        val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(binding.favoritesRecycler)
+
+        // Отслеживаем центральный айтем
+        binding.favoritesRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    val centerView = snapHelper.findSnapView(recyclerView.layoutManager)
+                    centerView?.let {
+                        val pos = recyclerView.getChildAdapterPosition(it)
+                        favoritesAdapter.selectedPosition = pos
+                        favoritesAdapter.notifyDataSetChanged()
+
+                        selectedModel = favoritesAdapter.currentList.getOrNull(pos)
+                    }
+                }
+            }
+        })
+
+        lifecycleScope.launch {
+            favoritesRepository.getModelsWithFavoriteStatus().collect { entries ->
+                val items = entries.filterIsInstance<GalleryEntry.Item>().filter { it.favorite }
+                favoritesAdapter.submitList(items)
+
+                // Обновить selectedModel если первый раз
+                if (selectedModel == null && items.isNotEmpty()) {
+                    selectedModel = items[0]
+                    favoritesAdapter.selectedPosition = 0
+                }
+            }
+        }
+
+
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -368,7 +440,9 @@ class ArActivity : AppCompatActivity() {
                         ) {
                             v.performClick()
                             val sp = ScreenPosition(x = ev.x/width, y = ev.y/height)
-                            modelRenderer.modelEvents.tryEmit(ModelRenderer.ModelEvent.Place(sp, currentModelPath),)
+                            selectedModel?.let { selected ->
+                                modelRenderer.modelEvents.tryEmit(ModelRenderer.ModelEvent.Place(sp, selected.path))
+                            }
                         }
                         transformationSystem.onTouch(ev)
                         true
@@ -494,4 +568,56 @@ class ArActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun takeArScreenshot() {
+        // 1) Скрываем UI
+        //binding.favoriteRecyclerView.isVisible = false
+        binding.screenshotButton.isVisible = false
+
+        // 2) Создаём bitmap
+        val view = binding.surfaceView
+        val bmp = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+
+        // 3) Запрос PixelCopy
+        PixelCopy.request(view, bmp, { copyResult ->
+            if (copyResult == PixelCopy.SUCCESS) {
+                // 4) Сохраняем в галерею
+                saveBitmapToGallery(bmp)
+            } else {
+                Toast.makeText(this, "Снимок не удался: $copyResult", Toast.LENGTH_SHORT).show()
+            }
+            // 5) Восстанавливаем UI
+            //binding.favoriteRecyclerView.isVisible = true
+            binding.screenshotButton.isVisible = true
+        }, Handler(Looper.getMainLooper()))
+    }
+
+    private fun saveBitmapToGallery(bitmap: Bitmap) {
+        val filename = "AR_${System.currentTimeMillis()}.png"
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ARApp")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        val uri = contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+        )
+
+        uri?.let {
+            contentResolver.openOutputStream(it).use { out: OutputStream? ->
+                if (out != null) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+            }
+            values.clear()
+            values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            contentResolver.update(it, values, null, null)
+            Toast.makeText(this, "Снимок сохранён: $filename", Toast.LENGTH_SHORT).show()
+        } ?: run {
+            Toast.makeText(this, "Не удалось сохранить снимок", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 }

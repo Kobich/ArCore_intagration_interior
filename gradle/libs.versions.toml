@@ -38,6 +38,7 @@ filamentAndroid = "1.49.3"
 arrowFx = "0.12.1"
 coil = "2.5.0"
 mockk = "1.13.9"
+datastoreCoreAndroid = "1.1.7"
 
 [plugins]
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
@@ -184,3 +185,4 @@ filament-utils-android = { module = "com.google.android.filament:filament-utils-
 gltfio-android = { module = "com.google.android.filament:gltfio-android", version.ref = "filamentAndroid" }
 
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+datastore-core-android = { group = "androidx.datastore", name = "datastore-core-android", version.ref = "datastoreCoreAndroid" }

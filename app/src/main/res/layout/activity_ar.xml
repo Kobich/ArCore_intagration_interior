@@ -8,16 +8,7 @@
     android:keepScreenOn="true"
     tools:context="com.example.app.aractivity.ArActivity">
 
-    <Button
-        android:id="@+id/btnModelPicker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="📦 Модель"
-        android:layout_margin="16dp"
-        android:layout_gravity="top|end"
-        android:backgroundTint="@android:color/white"
-        android:textColor="@android:color/black"
-        />
+
 
     <com.example.app.ui.TouchSurfaceView
         android:id="@+id/surfaceView"
@@ -25,7 +16,46 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true"
         android:layout_gravity="center"
+
         />
+
+    <ImageView
+        android:id="@+id/backByActivity"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/arrow_back_svgrepo_com"
+        android:contentDescription="get_back_by_activity"
+        app:layout_constraintTop_toTopOf="parent"
+
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <ImageView
+        android:id="@+id/screenshotButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:src="@drawable/camera"
+        android:contentDescription="take_screenshot"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_gravity="end"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favoritesRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="96dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="16dp"
+        android:clipToPadding="false"
+        android:paddingStart="96dp"
+        android:paddingEnd="96dp"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:background="@android:color/transparent" />
+
+
+
 
     <FrameLayout
         android:id="@+id/hand_motion_container"
@@ -34,11 +64,14 @@
         android:clipChildren="false"
         android:visibility="gone">
 
+
         <com.example.app.arcore.HandMotionView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:foregroundGravity="center"
             android:scaleType="center"
             android:src="@drawable/sceneform_hand_phone" />
+
+
     </FrameLayout>
 </FrameLayout>

@@ -35,7 +35,7 @@ import kotlin.math.min
 
 class PlaneRenderer(context: Context, private val filament: Filament) {
     companion object {
-        private const val PLANE_VERTEX_BUFFER_SIZE: Int = 1000
+        private const val PLANE_VERTEX_BUFFER_SIZE: Int = 3000
         private const val PLANE_INDEX_BUFFER_SIZE: Int = (PLANE_VERTEX_BUFFER_SIZE - 2) * 3
     }
 
