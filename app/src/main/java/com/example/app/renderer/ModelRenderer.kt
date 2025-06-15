@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 import kotlin.math.sqrt
@@ -43,10 +44,12 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
 
     private suspend fun getModelBytes(path: String): ByteArray = withContext(Dispatchers.IO) {
         modelBytesCache[path] ?: run {
-
-            val bytes = context.assets.open(path).use { input ->
-                ByteArray(input.available()).also { input.read(it) }
+            val bytes = if (path.startsWith("/")) {
+                File(path).inputStream().use { it.readBytes() }
+            } else {
+                context.assets.open(path).use { it.readBytes() }
             }
+
             modelBytesCache[path] = bytes
             bytes
         }
@@ -62,7 +65,8 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
         val boundCenter: V3,
         val boundRadius: Float,
 
-        var lastTransformMatrix: FloatArray? = null
+        var lastTransformMatrix: FloatArray? = null,
+        var lastTransformMatrixUpdateTime: Long? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -80,6 +84,7 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                 if (other.lastTransformMatrix == null) return false
                 if (!lastTransformMatrix.contentEquals(other.lastTransformMatrix)) return false
             } else if (other.lastTransformMatrix != null) return false
+            if (lastTransformMatrixUpdateTime != other.lastTransformMatrixUpdateTime) return false
 
             return true
         }
@@ -92,6 +97,7 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
             result = 31 * result + boundCenter.hashCode()
             result = 31 * result + boundRadius.hashCode()
             result = 31 * result + (lastTransformMatrix?.contentHashCode() ?: 0)
+            result = 31 * result + (lastTransformMatrixUpdateTime?.hashCode() ?: 0)
             return result
         }
     }
@@ -101,6 +107,7 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
 
     private var selectedIndex: Int = -1
 
+    private val maxInstances = 3
 
     val modelEvents: MutableSharedFlow<ModelEvent> =
         MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -113,14 +120,6 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
 
     init {
         coroutineScope.launch {
-            // — Загрузка «базового» Asset один раз
-            val baseAsset = withContext(Dispatchers.IO) {
-                context.assets.open("models/other/AR-Code-1683008649313.glb").use { input ->
-                    val bytes = ByteArray(input.available()).also { input.read(it) }
-                    filament.assetLoader.createAsset(ByteBuffer.wrap(bytes))!!
-                }
-            }
-            filament.resourceLoader.loadResources(baseAsset)
 
             // A) Place — на каждый tap создаём новый экземпляр
             launch {
@@ -151,11 +150,8 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                                     halfArr[1]*halfArr[1] +
                                     halfArr[2]*halfArr[2]
                         )
-                        //val localCenter = V3(floatArrayOf(centerArr[0],centerArr[1],centerArr[2]))
-
                         val minY = centerArr[1] - halfArr[1]
                         val yOffset = -minY* scale
-
                         val placePos = pos.copy()
                         placePos.y += yOffset
 
@@ -168,6 +164,12 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                             boundCenter = V3(floatArrayOf(centerArr[0],centerArr[1],centerArr[2])),
                             boundRadius = radius,
                         )
+                        // --- Ограничение количества моделей ---
+                        while (instances.size > maxInstances) {
+                            val removed = instances.removeAt(0)
+                            filament.scene.removeEntities(removed.asset.entities)
+                            // TODO: destroy FilamentAsset полностью при необходимости
+                        }
                         selectedIndex = instances.lastIndex
                     }
             }
@@ -211,12 +213,11 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                     }
             }
 
-            // D) Рендер каждый кадр всех инстансов
             // D) Рендер каждый кадр всех инстансов (оптимизированный: setTransform() только при изменении)
             launch {
                 doFrameEvents.collect { frame ->
                     instances.forEach { inst ->
-                        // 1) Если у модели есть анимация, запускаем её
+                        // --- Отключаем анимацию, если у модели нет ---
                         val animator = inst.asset.instance.animator
                         if (animator.animationCount > 0) {
                             animator.applyAnimation(
@@ -226,23 +227,20 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                             )
                             animator.updateBoneMatrices()
                         }
-
-                        // 2) Вычисляем новую матрицу трансформации
+                        // --- Если модель статична, не обновлять transform чаще 30 Гц ---
+                        val now = System.currentTimeMillis()
+                        if (inst.lastTransformMatrix != null && now - (inst.lastTransformMatrixUpdateTime ?: 0) < 33) return@forEach
                         val newMatrix = m4Identity()
                             .translate(inst.translation.x, inst.translation.y, inst.translation.z)
                             .rotate(inst.rotate.toDegrees, 0f, 1f, 0f)
                             .scale(inst.scale, inst.scale, inst.scale)
                             .floatArray
-
-                        // 3) Если матрица изменилась (или ещё не была установлена), отправляем её Filament
-                        if (inst.lastTransformMatrix == null ||
-                            !inst.lastTransformMatrix!!.contentEquals(newMatrix)
-                        ) {
+                        if (inst.lastTransformMatrix == null || !inst.lastTransformMatrix!!.contentEquals(newMatrix)) {
                             val tm = filament.engine.transformManager
                             val ti = tm.getInstance(inst.asset.root)
                             tm.setTransform(ti, newMatrix)
-                            // Обновляем кэш
                             inst.lastTransformMatrix = newMatrix
+                            inst.lastTransformMatrixUpdateTime = now
                         }
                     }
                 }
@@ -329,6 +327,4 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
         selectedIndex = bestIdx
         return true
     }
-
-
 }

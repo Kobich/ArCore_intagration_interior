@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.drawerlayout.widget.DrawerLayout
 
 @AndroidEntryPoint
 class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener {
@@ -61,6 +62,12 @@ class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListe
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refreshData()
+
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+
         binding.navigationView.setNavigationItemSelectedListener(this)
 
         // RecyclerView
@@ -73,10 +80,20 @@ class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListe
         }
         galleryAdapter = GalleryAdapter(
             onItemClicked = { item ->
-                startActivity(
-                    Intent(requireContext(), ArActivity::class.java)
-                        .putExtra("modelPath", item.path)
+
+                val isDownloaded = item.id.startsWith("downloaded_")
+                val dialog = ModelPreviewDialogFragment.newInstance(
+                    modelName = item.displayName,
+                    modelImage = item.preview,
+                    isDownloaded = isDownloaded,
+                    modelPath = item.path
                 )
+                dialog.show(parentFragmentManager, "model_preview")
+//                    startActivity(
+//                        Intent(requireContext(), ArActivity::class.java)
+//                            .putExtra("modelPath", item.path)
+//                    )
+
             },
             onFavoriteClicked = { item ->
                 viewModel.toggleFavorite(item)
@@ -84,7 +101,6 @@ class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListe
         )
         binding.rvGallery.adapter = galleryAdapter
 
-        // --- New: MenuProvider вместо deprecated setHasOptionsMenu() ---
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -106,16 +122,19 @@ class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListe
                         viewModel.setShowOnlyFavorites(!viewModel.showOnlyFavorites.value)
                         true
                     }
+
                     R.id.action_filter -> {
-                        Toast.makeText(requireContext(), "Toolbar Filter clicked", Toast.LENGTH_SHORT).show()
+                        startActivity(
+                        Intent(requireContext(), ArActivity::class.java)
+                    )
                         true
                     }
+
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        // observe flows
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -125,7 +144,6 @@ class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListe
                 }
                 launch {
                     viewModel.showOnlyFavorites.collectLatest {
-                        // re-create toolbar menu to update favorite icon
                         requireActivity().invalidateMenu()
                     }
                 }
@@ -138,22 +156,72 @@ class GalleryFragment : Fragment(), NavigationView.OnNavigationItemSelectedListe
      */
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         binding.drawerLayout.closeDrawer(GravityCompat.START)
-        return when (item.itemId) {
-            R.id.nav_scan_qr -> {
-                // Запускаем фрагмент/активити для сканирования QR
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, QrModelDownloadFragment())
-                    .addToBackStack(null)
-                    .commit()
-                true
+
+        val drawerListener = object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+
+            override fun onDrawerOpened(drawerView: View) {}
+
+            override fun onDrawerStateChanged(newState: Int) {
+                if (newState == DrawerLayout.STATE_IDLE && !binding.drawerLayout.isDrawerOpen(
+                        GravityCompat.START
+                    )
+                ) {
+                    binding.drawerLayout.removeDrawerListener(this)
+                    when (item.itemId) {
+                        R.id.nav_scan_qr -> replaceFragment(QrModelDownloadFragment())
+                        R.id.nav_download_link -> replaceFragment(UrlDownloadFragment())
+                    }
+                }
             }
-            // другие пункты...
-            else -> false
+
+            override fun onDrawerClosed(drawerView: View) {
+                binding.drawerLayout.removeDrawerListener(this)
+                when (item.itemId) {
+                    R.id.nav_scan_qr -> replaceFragment(QrModelDownloadFragment())
+                    R.id.nav_download_link -> replaceFragment(UrlDownloadFragment())
+                }
+            }
+        }
+
+        // Добавляем слушатель
+        binding.drawerLayout.addDrawerListener(drawerListener)
+
+        // Если меню уже закрыто, сразу выполняем переход
+        if (!binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.removeDrawerListener(drawerListener)
+            when (item.itemId) {
+                R.id.nav_scan_qr -> replaceFragment(QrModelDownloadFragment())
+                R.id.nav_download_link -> replaceFragment(UrlDownloadFragment())
+            }
+        }
+
+        return true
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        parentFragmentManager.beginTransaction().apply {
+            setCustomAnimations(
+                R.anim.slide_in_left,  // enter
+                R.anim.slide_in_right,  // exit
+                R.anim.slide_out_left,   // popEnter
+                R.anim.slide_out_right  // popExit
+            )
+
+            replace(R.id.fragmentContainer, fragment)
+            addToBackStack(null)
+            setReorderingAllowed(true)
+            commit()
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshData()
     }
 }

@@ -9,13 +9,11 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class FavoritesRepository @Inject constructor(
     private val modelsRepository: ModelsRepository,
     private val favoritesPreferences: FavoritesPreferences
 ) {
-
     val favoriteIds: Flow<Set<String>> = favoritesPreferences.favoriteItemsIds
 
     fun getModelsWithFavoriteStatus(): Flow<List<GalleryEntry>> {
@@ -35,5 +33,4 @@ class FavoritesRepository @Inject constructor(
     suspend fun toggleFavorite(model: GalleryEntry.Item) {
         favoritesPreferences.toggleFavorite(model.id)
     }
-
 }

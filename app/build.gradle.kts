@@ -96,6 +96,10 @@ android {
 
 dependencies {
     implementation(libs.datastore.core.android)
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.material)
+    implementation(libs.activity)
+    implementation(libs.constraintlayout)
     coreLibraryDesugaring(libs.desugarJdkLibsNio)
     implementation(platform(libs.composeBom))
 
@@ -107,6 +111,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation("androidx.datastore:datastore-preferences-core:1.1.7")
 
+    implementation("io.github.sceneview:sceneview:2.0.3")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.4.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
@@ -118,6 +123,7 @@ dependencies {
     lintChecks(libs.composeLintChecks)
     implementation(libs.bundles.filament)
 
+    implementation("org.jsoup:jsoup:1.15.4")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
 
 

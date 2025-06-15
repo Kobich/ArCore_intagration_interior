@@ -13,5 +13,8 @@
     <string name="navigation_drawer_open">Открыть меню</string>
     <string name="navigation_drawer_close">Закрыть меню</string>
     <string name="favorite">Favorite</string>
+    <string name="url_note">Поддерживаемые форматы: GLB, GLTF\nРекомендуемый размер до 50 МБ</string>
+    <string name="url_download">Загрузить модель</string>
+    <string name="https_example_com_model_glb">https://example.com/model.glb</string>
 
 </resources>

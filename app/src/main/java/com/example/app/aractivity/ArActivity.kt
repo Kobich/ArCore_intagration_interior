@@ -322,10 +322,6 @@ class ArActivity : AppCompatActivity() {
         // wait for activity to resume
         resumeBehavior.filterNotNull().first()
 
-        val currentModelPath = intent.getStringExtra("modelPath")
-            ?: error("modelPath not provided in Intent")
-
-        var didSelectOnDown = false
 
         if (checkIfOpenGlVersionSupported(minOpenGlVersion).not()) {
             showOpenGlNotSupportedDialog(this@ArActivity)

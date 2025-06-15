@@ -8,7 +8,9 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_filter"
-        android:icon="@drawable/menu_ic"
-        android:title="Фильтр"
-        app:showAsAction="ifRoom" />
+        android:icon="@drawable/ar_symbol"
+
+        android:title="AR-scene"
+        app:showAsAction="ifRoom"
+        />
 </menu>

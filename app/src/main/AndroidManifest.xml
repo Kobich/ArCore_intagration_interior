@@ -7,12 +7,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature android:name="android.hardware.camera" />
-
     <uses-feature
         android:glEsVersion="0x00030000"
-        android:required="true" />
-
-    <!-- Play Store listing only on devices that support ARCore -->
+        android:required="true" /> <!-- Play Store listing only on devices that support ARCore -->
     <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="true" />
@@ -29,22 +26,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExampleApp">
-
-
-
+        <activity
+            android:name=".ui.preview.PreviewModelActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.gallery.activity.GalleryActivity"
             android:exported="true"
-            android:label="Выбор модели" >
-
+            android:label="Выбор модели">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
-
         <activity
             android:name=".aractivity.ArActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
@@ -54,10 +48,11 @@
             android:screenOrientation="fullSensor"
             android:theme="@style/Theme.ExampleApp.Fullscreen"
             android:windowSoftInputMode="adjustPan|stateHidden">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
 
 
@@ -65,4 +60,5 @@
             android:name="com.google.ar.core"
             android:value="required" />
     </application>
+
 </manifest>

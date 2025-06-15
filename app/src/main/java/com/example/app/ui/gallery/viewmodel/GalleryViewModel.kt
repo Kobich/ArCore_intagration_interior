@@ -85,7 +85,7 @@ class GalleryViewModel @Inject constructor(
     /**
      * Обновляет данные с учетом текущих фильтров
      */
-    private fun refreshData() {
+    fun refreshData() {
         viewModelScope.launch {
             favoritesRepository.getModelsWithFavoriteStatus().collectLatest { models ->
                 _galleryItems.value = applyFilters(models)

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/modelPreviewImage"
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+        android:minHeight="300dp"
+        android:scaleType="centerCrop"
+         />
+
+    <TextView
+        android:id="@+id/modelName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"
+        android:textColor="?android:textColorPrimary" />
+
+    <TextView
+        android:id="@+id/modelInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="?android:textColorSecondary"
+        android:paddingBottom="8dp"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/btnPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Предпросмотр модели" />
+
+    <Button
+        android:id="@+id/btnRename"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Переименовать"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Удалить"
+        android:visibility="gone" />
+
+</LinearLayout>
