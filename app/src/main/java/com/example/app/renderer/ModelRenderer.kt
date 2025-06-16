@@ -245,7 +245,6 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
                     }
                 }
             }
-
         }
     }
 
@@ -256,6 +255,17 @@ class ModelRenderer(private val context: Context, private val arCore: ArCore, pr
     fun doFrame(frame: Frame) {
         doFrameEvents.tryEmit(frame)
     }
+
+    fun removeSelectedInstance() {
+        if (selectedIndex in instances.indices) {
+            val instance = instances[selectedIndex]
+            instance.asset.entities.forEach { filament.scene.removeEntity(it) }
+            instances.removeAt(selectedIndex)
+            selectedIndex = if (instances.isEmpty()) -1 else instances.lastIndex
+        }
+    }
+
+    fun hasInstances(): Boolean = instances.isNotEmpty()
 
     fun pickInstanceByScreenRadius(
         screenPos: ScreenPosition,

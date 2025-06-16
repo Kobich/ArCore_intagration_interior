@@ -134,6 +134,9 @@ class ArActivity : AppCompatActivity() {
         binding.screenshotButton.setOnClickListener {
             takeArScreenshot()
         }
+        binding.deleteButton.setOnClickListener {
+            deleteLastModelByScene()
+        }
 
         val favoritesAdapter = FavoriteModelsAdapter()
         binding.favoritesRecycler.apply {
@@ -565,25 +568,23 @@ class ArActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun deleteLastModelByScene() {
+        modelRenderer.removeSelectedInstance()
+        selectedModel = null
+    }
     private fun takeArScreenshot() {
-        // 1) Скрываем UI
-        //binding.favoriteRecyclerView.isVisible = false
         binding.screenshotButton.isVisible = false
 
-        // 2) Создаём bitmap
         val view = binding.surfaceView
         val bmp = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
 
-        // 3) Запрос PixelCopy
         PixelCopy.request(view, bmp, { copyResult ->
             if (copyResult == PixelCopy.SUCCESS) {
-                // 4) Сохраняем в галерею
                 saveBitmapToGallery(bmp)
             } else {
                 Toast.makeText(this, "Снимок не удался: $copyResult", Toast.LENGTH_SHORT).show()
             }
-            // 5) Восстанавливаем UI
-            //binding.favoriteRecyclerView.isVisible = true
             binding.screenshotButton.isVisible = true
         }, Handler(Looper.getMainLooper()))
     }

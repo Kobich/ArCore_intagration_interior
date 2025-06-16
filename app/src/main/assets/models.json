@@ -4,43 +4,56 @@
       "id": "chair_modern",
       "displayName": "Современный стул",
       "path": "models/chairs/chair2.glb",
-      "preview": "previews/chair_modern.png"
+      "preview": "previews/chair_modern_1.png"
 
     },
     {
-      "id": "chair_classic",
-      "displayName": "Классический стул",
+      "id": "chair_2",
+      "displayName": "кресло",
       "path": "models/chairs/AR-Code-12.glb",
-      "preview": "previews/chair_classic.png"
-    }
-  ],
-  "other": [
-    {
-      "id": "what_is_it",
-      "displayName": "хз",
-      "path": "models/chairs/AR-Code-1683008649313.glb",
-      "preview": "previews/what_is_it.png"
-
-    },
-    {
-      "id": "ball",
-      "displayName": "мяч",
-      "path": "models/other/ball.glb",
-      "preview": "previews/ball.png"
+      "preview": "previews/chair_2.png"
     }
   ],
   "sofas": [
     {
-      "id": "sofa_1",
-      "displayName": "шкаф деревянный",
-      "path": "models/sofas/sofa_1.glb",
-      "preview": "previews/sofa_1.png"
-    },
-    {
       "id": "sofa_2",
-      "displayName": "диван светлый",
+      "displayName": "диван темный",
       "path": "models/sofas/sofa_2.glb",
       "preview": "previews/sofa_2.png"
     }
-    ]
+    ],
+  "wardrobes": [
+    {
+      "id": "wardrobe_1",
+      "displayName": "шкаф деревянный",
+      "path": "models/wardrobes/wardrobe_1.glb",
+      "preview": "previews/wardrobe_1.png"
+    },
+    {
+      "id": "wardrobe_2",
+      "displayName": "Стеллаж",
+      "path": "models/wardrobes/wardrobe_2.glb",
+      "preview": "previews/wardrobe_2.png"
+    },
+    {
+      "id": "wardrobe_3",
+      "displayName": "комод",
+      "path": "models/wardrobes/wardrobe_3.glb",
+      "preview": "previews/wardrobe_3.png"
+    }
+    ],
+  "tables": [
+    {
+      "id": "table_1",
+      "displayName": "деревянный стол с узором",
+      "path": "models/tables/table_1.glb",
+      "preview": "previews/table_1.png"
+    },
+    {
+      "id": "table_2",
+      "displayName": "стол современный",
+      "path": "models/tables/table_2.glb",
+      "preview": "previews/table_2.png"
+    }
+  ]
 }

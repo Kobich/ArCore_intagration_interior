@@ -25,14 +25,12 @@ class PreviewFragment : Fragment(R.layout.fragment_preview_model) {
             try {
                 loadingView.isGone = false
 
-                // Загружаем окружение
                 val hdrFile = "environments/studio_small_09_2k.hdr"
                 sceneView.environmentLoader.loadHDREnvironment(hdrFile).apply {
                     sceneView.indirectLight = this?.indirectLight
                     sceneView.skybox = this?.skybox
                 }
 
-                // Настраиваем камеру
                 sceneView.cameraNode.apply {
                     position = Position(z = 4.0f)
                 }

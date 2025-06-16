@@ -9,37 +9,54 @@
     tools:context="com.example.app.aractivity.ArActivity">
 
 
-
     <com.example.app.ui.TouchSurfaceView
         android:id="@+id/surfaceView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:keepScreenOn="true"
         android:layout_gravity="center"
-
+        android:keepScreenOn="true"
         />
+
+    <ImageView
+        android:id="@+id/deleteButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="end"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="80dp"
+        app:tint="@color/colorPrimary"
+        android:contentDescription="delete_last_model"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/backByActivity"
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_marginStart="16dp"
+        app:tint="@color/colorPrimary"
         android:layout_marginTop="24dp"
-        android:src="@drawable/arrow_back_svgrepo_com"
         android:contentDescription="get_back_by_activity"
-        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/arrow_back_svgrepo_com"
+        app:layout_constraintEnd_toEndOf="parent"
 
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/screenshotButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:src="@drawable/camera"
-        android:contentDescription="take_screenshot"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_gravity="end"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_margin="16dp"
+
+        android:contentDescription="take_screenshot"
+        android:src="@drawable/camera"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/favoritesRecycler"
@@ -47,14 +64,12 @@
         android:layout_height="96dp"
         android:layout_gravity="bottom"
         android:layout_marginBottom="16dp"
+        android:background="@android:color/transparent"
         android:clipToPadding="false"
+        android:overScrollMode="never"
         android:paddingStart="96dp"
         android:paddingEnd="96dp"
-        android:overScrollMode="never"
-        android:scrollbars="none"
-        android:background="@android:color/transparent" />
-
-
+        android:scrollbars="none" />
 
 
     <FrameLayout
